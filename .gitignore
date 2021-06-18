@@ -2,3 +2,5 @@
 
 .terraform
 .terraform.lock.hcl
+
+k8s-output
