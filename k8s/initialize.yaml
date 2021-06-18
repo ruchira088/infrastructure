@@ -1,0 +1,9 @@
+---
+- hosts: localhost
+  connection: local
+
+  tasks:
+    - name: Run terraform plan
+      terraform:
+        project_path: ./terraform
+        force_init: yes

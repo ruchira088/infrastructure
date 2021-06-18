@@ -35,3 +35,15 @@ resource "aws_iam_user_policy" "cert_manager_iam_policy" {
 resource "aws_iam_access_key" "cert_manager_access_key" {
   user = aws_iam_user.cert_manager.name
 }
+
+resource "aws_ssm_parameter" "cert_manager_access_key_id" {
+  name = "/k8s/cert-manager/access-key-id"
+  type = "SecureString"
+  value = aws_iam_access_key.cert_manager_access_key.id
+}
+
+resource "aws_ssm_parameter" "cert_manager_secret_access_key" {
+  name = "/k8s/cert-manager/secret-access-key"
+  type = "SecureString"
+  value = aws_iam_access_key.cert_manager_access_key.secret
+}
