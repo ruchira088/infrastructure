@@ -14,7 +14,7 @@ spec:
       - dns01:
           route53:
             region: ap-southeast-2
-            accessKeyID: {{ aws_access_key_id }}
+            accessKeyID: "{{ aws_access_key_id }}"
             secretAccessKeySecretRef:
               name: cert
               key: AWS_SECRET_ACCESS_KEY

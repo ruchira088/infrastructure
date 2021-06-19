@@ -7,3 +7,18 @@
       terraform:
         project_path: ./terraform
         force_init: yes
+
+    - name: Create output directory
+      file:
+        path: k8s-output
+        state: directory
+
+    - name: Add Cert Manager to K8s
+      template:
+        src: "{{ item }}"
+        dest: k8s-output/{{ item | basename }}
+      with_fileglob:
+        - k8s-resource-files/*.yaml
+      vars:
+        aws_access_key_id: "{{ lookup('aws_ssm', '/k8s/cert-manager/access-key-id', region='ap-southeast-2') }}"
+        aws_secret_access_key: "{{ lookup('aws_ssm', '/k8s/cert-manager/secret-access-key', region='ap-southeast-2') }}"
