@@ -16,7 +16,7 @@ resource "aws_iam_user_policy" "cert_manager_iam_policy" {
         Resource: "arn:aws:route53:::change/*"
       },
       {
-        Effect: "Allow",
+        Effect = "Allow",
         Action = [
           "route53:ChangeResourceRecordSets",
           "route53:ListResourceRecordSets"
