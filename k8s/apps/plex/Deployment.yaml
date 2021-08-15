@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plex-deployment
+  namespace: plex
+spec:
+  selector:
+    matchLabels:
+      app: plex
+  template:
+    metadata:
+      labels:
+        app: plex
+    spec:
+      containers:
+        - name: plex-container
+          image: plexinc/pms-docker
+          env:
+            - name: ADVERTISE_IP
+              value: https://plex.home.ruchij.com
+          readinessProbe:
+            httpGet:
+              port: plex-port
+              path: /web
+          livenessProbe:
+            httpGet:
+              port: plex-port
+              path: /web
+          startupProbe:
+            periodSeconds: 5
+            failureThreshold: 10
+            httpGet:
+              port: plex-port
+              path: /web
+          ports:
+            - name: plex-port
+              containerPort: 32400
+          volumeMounts:
+            - mountPath: /data/movies
+              name: movies-folder
+            - mountPath: /data/tv-shows
+              name: tv-shows-folder
+            - mountPath: /config
+              name: plex-config
+      volumes:
+        - name: movies-folder
+          hostPath:
+            path: /mnt/md1/movies
+            type: Directory
+        - name: tv-shows-folder
+          hostPath:
+            path: /mnt/md1/tv-shows
+            type: Directory
+        - name: plex-config
+          hostPath:
+            path: /mnt/md1/plex-config
+            type: Directory
