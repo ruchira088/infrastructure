@@ -3,7 +3,7 @@
   connection: local
 
   vars:
-    envName: aws
+    envName: dev
 
   tasks:
     - set_fact:
