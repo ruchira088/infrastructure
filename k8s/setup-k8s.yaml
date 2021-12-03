@@ -27,20 +27,6 @@
             path: output/dashboard
             state: directory
 
-    - name: Install K8s dashboard
-      block:
-        - name: Add helm K8s dashboard repository
-          command: helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
-
-        - name: Deploy K8s dashboard
-          shell: |
-            KUBECONFIG={{ k8s_config_file }} helm install dashboard-deploy kubernetes-dashboard/kubernetes-dashboard \
-              --set protocolHttp=true \
-              --set service.externalPort=80 \
-              --set extraArgs="{--enable-insecure-login=true}" \
-              --namespace kubernetes-dashboard \
-              --create-namespace
-
     - name: Setup Cert Manager in K8s
       block:
         - name: Install Cert Manager
@@ -76,14 +62,27 @@
         - name: Apply K8s resource files
           command: kubectl apply -f output/cluster-issuer --kubeconfig {{ k8s_config_file }}
 
-    - name: Add Ingress to the K8s dashboard
+
+    - name: Install K8s dashboard
       block:
+        - name: Add helm K8s dashboard repository
+          command: helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+
+        - name: Deploy K8s dashboard
+          shell: |
+            KUBECONFIG={{ k8s_config_file }} helm install dashboard-deploy kubernetes-dashboard/kubernetes-dashboard \
+              --set protocolHttp=true \
+              --set service.externalPort=80 \
+              --set extraArgs="{--enable-insecure-login=true}" \
+              --namespace kubernetes-dashboard \
+              --create-namespace
+
         - name: Render K8s resource files
-          template:
-            src: "{{ item }}"
-            dest: output/dashboard/{{ item | basename }}
-          with_fileglob:
-            - k8s-resource-files/dashboard/*.yaml
+            template:
+              src: "{{ item }}"
+              dest: output/dashboard/{{ item | basename }}
+            with_fileglob:
+              - k8s-resource-files/dashboard/*.yaml
 
         - name: Apply K8s resource files
           command: kubectl apply -f output/dashboard --kubeconfig {{ k8s_config_file }}
