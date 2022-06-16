@@ -3,13 +3,10 @@
   connection: local
 
   vars:
-    envName: dev
+    k8s_config_file:
+    k8s_dashboard_host_name:
 
   tasks:
-    - set_fact:
-        k8s_config_file: "~/Development/infrastructure/env/{{ envName }}/config"
-        k8s_dashboard_host_name: "k8s-dashboard.{{ envName }}.ruchij.com"
-
     - name: Execute terraform plan
       terraform:
         project_path: ./terraform
@@ -32,22 +29,8 @@
         - name: Install Cert Manager
           command: |
             kubectl apply \
-              -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml \
+              -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml \
               --kubeconfig {{ k8s_config_file }}
-
-        - name: Delete Cert Manager web hooks
-          block:
-            - name: Delete mutating webhook
-              command: |
-                kubectl delete \
-                  mutatingwebhookconfiguration.admissionregistration.k8s.io cert-manager-webhook \
-                  --kubeconfig {{ k8s_config_file }}
-
-            - name: Delete validating webhook
-              command: |
-                kubectl delete \
-                   validatingwebhookconfigurations.admissionregistration.k8s.io cert-manager-webhook \
-                   --kubeconfig {{ k8s_config_file }}
 
         - name: Render K8s resource files
           template:
@@ -61,7 +44,6 @@
 
         - name: Apply K8s resource files
           command: kubectl apply -f output/cluster-issuer --kubeconfig {{ k8s_config_file }}
-
 
     - name: Install K8s dashboard
       block:
@@ -78,11 +60,11 @@
               --create-namespace
 
         - name: Render K8s resource files
-            template:
-              src: "{{ item }}"
-              dest: output/dashboard/{{ item | basename }}
-            with_fileglob:
-              - k8s-resource-files/dashboard/*.yaml
+          template:
+            src: "{{ item }}"
+            dest: output/dashboard/{{ item | basename }}
+          with_fileglob:
+            - k8s-resource-files/dashboard/*.yaml
 
         - name: Apply K8s resource files
           command: kubectl apply -f output/dashboard --kubeconfig {{ k8s_config_file }}
