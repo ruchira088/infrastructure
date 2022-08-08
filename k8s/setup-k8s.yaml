@@ -29,8 +29,22 @@
         - name: Install Cert Manager
           command: |
             kubectl apply \
-              -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml \
+              -f https://github.com/cert-manager/cert-manager/releases/download/v1.9.1/cert-manager.yaml \
               --kubeconfig {{ k8s_config_file }}
+
+        - name: Delete Cert Manager web hooks
+          block:
+            - name: Delete mutating webhook
+              command: |
+                kubectl delete \
+                  mutatingwebhookconfiguration.admissionregistration.k8s.io cert-manager-webhook \
+                  --kubeconfig {{ k8s_config_file }}
+
+            - name: Delete validating webhook
+              command: |
+                kubectl delete \
+                   validatingwebhookconfigurations.admissionregistration.k8s.io cert-manager-webhook \
+                   --kubeconfig {{ k8s_config_file }}
 
         - name: Render K8s resource files
           template:
