@@ -3,13 +3,13 @@
   connection: local
 
   vars:
-    k8s_config_file:
-    k8s_dashboard_host_name:
+    k8s_config_file: /Users/ruchira/Development/infrastructure/kubeconfig
+    k8s_dashboard_host_name: k8s-dashboard.dev.ruchij.com
 
   tasks:
-    - name: Execute terraform plan
+    - name: Generate Route 53 credentials
       terraform:
-        project_path: ./terraform
+        project_path: ./route-53-credentials
         force_init: yes
 
     - name: Create output directories
