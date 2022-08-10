@@ -5,3 +5,5 @@
 
 output
 env/*
+
+kubeconfig
