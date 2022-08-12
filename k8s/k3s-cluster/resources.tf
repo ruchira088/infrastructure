@@ -32,6 +32,22 @@ module "k3s_server_2" {
   ]
 }
 
+resource "aws_ebs_volume" "data" {
+  availability_zone = "ap-southeast-2b"
+  type = "gp3"
+  size = 100
+
+  tags = {
+    Name = "persistent-data"
+  }
+}
+
+resource "aws_volume_attachment" "data" {
+  device_name = "/dev/sdf"
+  instance_id = module.k3s_server_2.id
+  volume_id   = aws_ebs_volume.data.id
+}
+
 module "k3s_server_3" {
   source            = "./modules/k3s-server"
   availability_zone = "ap-southeast-2c"
