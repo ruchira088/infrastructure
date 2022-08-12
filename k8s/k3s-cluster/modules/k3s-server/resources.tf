@@ -39,13 +39,14 @@ data "aws_subnet" "public_subnet" {
 
 resource "aws_instance" "k3s_server" {
   ami = data.aws_ami.ubuntu.id
-  instance_type = "t3.small"
+  instance_type = "t3a.medium"
 
   key_name = local.key_name
 
   root_block_device {
     volume_size = 40
     volume_type = "gp3"
+    delete_on_termination = true
   }
 
   subnet_id = data.aws_subnet.public_subnet.id
