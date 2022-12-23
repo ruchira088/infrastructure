@@ -3,8 +3,6 @@ locals {
   vpc_name = "ruchira-vpc"
 }
 
-resource "random_uuid" "k3s_token" {}
-
 data "aws_ami" "ubuntu" {
   most_recent = true
 
@@ -44,7 +42,7 @@ resource "aws_instance" "k3s_server" {
   key_name = local.key_name
 
   root_block_device {
-    volume_size = 40
+    volume_size = var.volume_size
     volume_type = "gp3"
     delete_on_termination = true
   }

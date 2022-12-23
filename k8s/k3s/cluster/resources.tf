@@ -1,7 +1,7 @@
 resource "random_uuid" "k3s_token" {}
 
 module "k3s_server_1" {
-  source            = "./modules/k3s-server"
+  source            = "../modules/k3s-server"
   availability_zone = "ap-southeast-2a"
   ec2_name          = "k3s-server-1"
 
@@ -15,7 +15,7 @@ module "k3s_server_1" {
 }
 
 module "k3s_server_2" {
-  source            = "./modules/k3s-server"
+  source            = "../modules/k3s-server"
   availability_zone = "ap-southeast-2b"
   ec2_name          = "k3s-server-2"
 
@@ -49,7 +49,7 @@ resource "aws_volume_attachment" "data" {
 }
 
 module "k3s_server_3" {
-  source            = "./modules/k3s-server"
+  source            = "../modules/k3s-server"
   availability_zone = "ap-southeast-2c"
   ec2_name          = "k3s-server-3"
 
