@@ -3,14 +3,17 @@ module "k3s_node" {
   availability_zone = var.availability_zone
   ec2_name          = "k3s-server"
   volume_size       = 100
+  instance_type     = "t3a.large"
 
   init_script = <<-EOF
     #!/usr/bin/env bash
 
-    mkdir -p /mnt/data/videos && mkdir -p /mnt/data/images
-
-    curl -sfL https://get.k3s.io | sh -
-
+    curl -sfL https://get.k3s.io | sh - && \
+    mkdir -p ~/.kube && \
+    sudo cat /etc/rancher/k3s/k3s.yaml > ~/.kube/config && \
+    sudo chmod 600 ~/.kube/config && \
+    echo "export KUBECONFIG=~/.kube/config" >> ~/.bashrc && \
+    echo "alias k='kubectl'" >> ~/.bashrc
   EOF
 }
 
