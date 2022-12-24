@@ -14,6 +14,12 @@ variable "volume_size" {
   default     = 40
 }
 
+variable "instance_type" {
+  type        = string
+  description = "Instance type of the K3s server"
+  default     = "t3a.medium"
+}
+
 variable "init_script" {
   type        = string
   description = "Initialization script to be executed"
