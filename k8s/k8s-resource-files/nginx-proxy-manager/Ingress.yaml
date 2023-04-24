@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-proxy-manager-ingress
+  namespace: nginx-proxy-manager
+spec:
+  tls:
+    - secretName: nginx-proxy-manager-tls
+      hosts:
+        - admin.nginx.home.ruchij.com
+        - portainer.home.ruchij.com
+  rules:
+    - host: admin.nginx.home.ruchij.com
+      http:
+        paths:
+          - pathType: ImplementationSpecific
+            backend:
+              service:
+                name: nginx-proxy-manager-service
+                port:
+                  name: admin-port
+    - host: portainer.home.ruchij.com
+      http: &httpConfig
+        paths:
+          - pathType: ImplementationSpecific
+            backend:
+              service:
+                name: nginx-proxy-manager-service
+                port:
+                  name: http-port

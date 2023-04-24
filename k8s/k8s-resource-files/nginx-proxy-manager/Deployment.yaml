@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-proxy-manager-deployment
+  namespace: nginx-proxy-manager
+spec:
+  selector:
+    matchLabels:
+      app: nginx-proxy-manager
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx-proxy-manager
+    spec:
+      containers:
+        - name: nginx-proxy-manager-container
+          image: jc21/nginx-proxy-manager:latest
+          ports:
+            - containerPort: 80
+              name: http-port
+            - containerPort: 81
+              name: admin-port
+          volumeMounts:
+            - mountPath: /data
+              name: nginx-proxy-manager-data
+      volumes:
+        - name: nginx-proxy-manager-data
+          hostPath:
+            path: /home/ruchira/Data/nginx-proxy-manager
+            type: Directory

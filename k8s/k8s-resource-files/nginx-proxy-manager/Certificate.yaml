@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  namespace: nginx-proxy-manager
+  name: nginx-proxy-manager-certificate
+spec:
+  secretName: nginx-proxy-manager-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: lets-encrypt
+  dnsNames:
+    - admin.nginx.home.ruchij.com
+    - portainer.home.ruchij.com
