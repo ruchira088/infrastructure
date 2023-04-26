@@ -14,10 +14,7 @@ spec:
     spec:
       containers:
         - name: plex-container
-          image: plexinc/pms-docker:1.31.0.6654-02189b09f
-          env:
-            - name: ADVERTISE_IP
-              value: https://plex.home.ruchij.com
+          image: plexinc/pms-docker:1.32.0.6973-a787c5a8e
           readinessProbe:
             httpGet:
               port: plex-port
@@ -45,13 +42,13 @@ spec:
       volumes:
         - name: movies-folder
           hostPath:
-            path: /mnt/md1/movies
+            path: /media/plex/movies
             type: Directory
         - name: tv-shows-folder
           hostPath:
-            path: /mnt/md1/tv-shows
+            path: /media/plex/tv-shows
             type: Directory
         - name: plex-config
           hostPath:
-            path: /mnt/md1/plex-config
+            path: /media/plex/config
             type: Directory
