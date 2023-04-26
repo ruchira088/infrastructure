@@ -50,5 +50,5 @@ spec:
             type: Directory
         - name: plex-config
           hostPath:
-            path: /media/plex/config
+            path: /home/ruchira/Data/plex
             type: Directory
