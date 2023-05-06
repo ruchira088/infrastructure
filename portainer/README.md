@@ -8,6 +8,6 @@ docker run -d \
     --name portainer \
     --restart=unless-stopped \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    -v /home/ruchira/Data/portainer_data:/data \
+    -v /home/ruchira/Data/portainer:/data \
     portainer/portainer-ce:latest
 ```
