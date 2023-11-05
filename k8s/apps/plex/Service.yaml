@@ -6,6 +6,7 @@ metadata:
 spec:
   selector:
     app: plex
+  type: NodePort
   ports:
     - name: plex-port
       port: 32400
