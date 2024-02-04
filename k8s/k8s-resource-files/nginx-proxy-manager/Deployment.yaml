@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: nginx-proxy-manager-container
-          image: jc21/nginx-proxy-manager:latest
+          image: jc21/nginx-proxy-manager:github-pr-3513
           ports:
             - containerPort: 80
               name: http-port
@@ -24,8 +24,14 @@ spec:
           volumeMounts:
             - mountPath: /data
               name: nginx-proxy-manager-data
+            - mountPath: /etc/letsencrypt
+              name: nginx-proxy-manager-lets-encrypt
       volumes:
         - name: nginx-proxy-manager-data
           hostPath:
-            path: /home/ruchira/Data/nginx-proxy-manager
+            path: /home/ruchira/Data/nginx-proxy-manager/data
+            type: Directory
+        - name: nginx-proxy-manager-lets-encrypt
+          hostPath:
+            path: /home/ruchira/Data/nginx-proxy-manager/lets-encrypt
             type: Directory
