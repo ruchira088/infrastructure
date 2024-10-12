@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: nginx-proxy-manager-container
-          image: jc21/nginx-proxy-manager:github-pr-3513
+          image: jc21/nginx-proxy-manager:2.11.3
           ports:
             - containerPort: 80
               name: http-port
