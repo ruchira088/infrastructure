@@ -35,8 +35,12 @@ spec:
           volumeMounts:
             - mountPath: /data/movies
               name: movies-folder
+            - mountPath: /data/movies-1
+              name: movies-folder-1
             - mountPath: /data/tv-shows
               name: tv-shows-folder
+            - mountPath: /data/tv-shows-1
+              name: tv-shows-folder-1
             - mountPath: /config
               name: plex-config
       volumes:
@@ -44,9 +48,17 @@ spec:
           hostPath:
             path: /media/plex/movies
             type: Directory
+        - name: movies-folder-1
+          hostPath:
+            path: /media/disk/media/movies
+            type: Directory
         - name: tv-shows-folder
           hostPath:
             path: /media/plex/tv-shows
+            type: Directory
+        - name: tv-shows-folder-1
+          hostPath:
+            path: /media/disk/media/tv-shows
             type: Directory
         - name: plex-config
           hostPath:
