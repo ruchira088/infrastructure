@@ -1,6 +1,6 @@
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:7.7.2
+    image: confluentinc/cp-zookeeper:7.9.2
     restart: unless-stopped
     ports:
       - 2181:2181
@@ -8,7 +8,7 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
 
   kafka-broker:
-    image: confluentinc/cp-kafka:7.7.2
+    image: confluentinc/cp-kafka:7.9.2
     restart: unless-stopped
     depends_on:
       - zookeeper
@@ -22,7 +22,7 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://server.internal.ruchij.com:9092
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:7.7.2
+    image: confluentinc/cp-schema-registry:7.9.2
     restart: unless-stopped
     depends_on:
       - kafka-broker
@@ -33,7 +33,7 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: server.internal.ruchij.com:9092
 
   kpow:
-    image: factorhouse/kpow-ce
+    image: factorhouse/kpow-ce:94.2
     restart: unless-stopped
     mem_limit: 4g
     ports:
