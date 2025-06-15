@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: jellyfin-certificate
+  namespace: jellyfin
+spec:
+  secretName: jellyfin-tls-secret
+  issuerRef:
+    kind: ClusterIssuer
+    name: lets-encrypt
+  dnsNames:
+    - jellyfin.home.ruchij.com

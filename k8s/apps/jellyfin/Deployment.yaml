@@ -1,37 +1,38 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: plex-deployment
-  namespace: plex
+  name: jellyfin-deployment
+  namespace: jellyfin
 spec:
   selector:
     matchLabels:
-      app: plex
+      app: jellyfin
   template:
     metadata:
       labels:
-        app: plex
+        app: jellyfin
     spec:
       containers:
-        - name: plex-container
-          image: plexinc/pms-docker:1.41.8.9834-071366d65
+        - name: jellyfin-container
+          image: jellyfin/jellyfin:10.10.7
           readinessProbe:
             httpGet:
-              port: plex-port
+              port: jellyfin-port
               path: /web
           livenessProbe:
             httpGet:
-              port: plex-port
+              port: jellyfin-port
               path: /web
           startupProbe:
-            periodSeconds: 5
+            periodSeconds: 15
+            initialDelaySeconds: 60
             failureThreshold: 10
             httpGet:
-              port: plex-port
+              port: jellyfin-port
               path: /web
           ports:
-            - name: plex-port
-              containerPort: 32400
+            - name: jellyfin-port
+              containerPort: 8096
           volumeMounts:
             - mountPath: /data/movies
               name: movies-folder
@@ -42,7 +43,7 @@ spec:
             - mountPath: /data/tv-shows-1
               name: tv-shows-folder-1
             - mountPath: /config
-              name: plex-config
+              name: jellyfin-config
       volumes:
         - name: movies-folder
           hostPath:
@@ -60,7 +61,7 @@ spec:
           hostPath:
             path: /media/disk/media/tv-shows
             type: Directory
-        - name: plex-config
+        - name: jellyfin-config
           hostPath:
-            path: /home/ruchira/Data/plex
+            path: /home/ruchira/Data/jellyfin
             type: Directory

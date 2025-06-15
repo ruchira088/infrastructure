@@ -10,3 +10,5 @@ spec:
   ports:
     - name: plex-port
       port: 32400
+      targetPort: plex-port
+      nodePort: 32400
