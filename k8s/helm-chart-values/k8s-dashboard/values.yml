@@ -1,0 +1,8 @@
+kong:
+  proxy:
+    # Ensure the HTTP listener is enabled for the Kong proxy
+    http:
+      enabled: true
+    # Disable the TLS (HTTPS) listener for the Kong proxy
+    tls:
+      enabled: false
