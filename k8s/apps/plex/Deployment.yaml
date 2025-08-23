@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: plex-container
-          image: plexinc/pms-docker:1.41.9.9961-46083195d
+          image: plexinc/pms-docker:1.42.1.10060-4e8b05daf
           readinessProbe:
             httpGet:
               port: plex-port

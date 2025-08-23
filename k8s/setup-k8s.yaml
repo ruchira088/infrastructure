@@ -7,20 +7,6 @@
     k8s_dashboard_host_name: dashboard.k8s.home.ruchij.com
 
   tasks:
-#    - name: Deploy Elasticsearch
-#      block:
-#        - name: Add helm elastic repository
-#          command: helm repo add elastic https://helm.elastic.co
-#
-#        - name: Deploy Elasticsearch helm chart
-#          shell: |
-#            KUBECONFIG={{ k8s_config_file }} helm install elasticsearch elastic/elasticsearch \
-#              --set extraEnvs=[{ name: "discovery.type", value: "single-node" }] \
-#              --set imageTag=7.17.5 \
-#              --set replicas=1 \
-#              --namespace logging \
-#              --create-namespace
-#
 #    - name: Generate Route 53 credentials
 #      terraform:
 #        project_path: ./route-53-credentials
