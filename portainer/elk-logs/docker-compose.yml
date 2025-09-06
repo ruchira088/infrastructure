@@ -1,0 +1,79 @@
+services:
+  api:
+    image: ghcr.io/ruchira088/logging-poc-api:dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      logstash:
+        condition: service_healthy
+    volumes:
+      - ./log-config:/opt/data
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.1.0
+    healthcheck:
+      test: "curl -f -u elastic:my-password http://localhost:9200/_cluster/health"
+      start_period: 5s
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 4g
+    ports:
+      - "9200:9200"
+    environment:
+      ELASTIC_PASSWORD: "my-password"
+      "discovery.type": single-node
+      "xpack.security.http.ssl.enabled": false
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:9.1.0
+    volumes:
+      - ./logstash/pipeline.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    ports:
+      - "5001:5001"
+      - "5002:5002"
+    healthcheck:
+      test: "curl -f http://localhost:9600/"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  elasticsearch-users:
+    image: curlimages/curl
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    command:
+      - /opt/scripts/create_users.sh
+    volumes:
+      - ./elasticsearch:/opt/scripts
+    environment:
+      ELASTICSEARCH_HOST: "http://elasticsearch:9200"
+      ELASTICSEARCH_USERNAME: "elastic"
+      ELASTICSEARCH_PASSWORD: "my-password"
+      KIBANA_USER: "kibana-user"
+      KIBANA_PASSWORD: "kibana-password"
+      LOGSTASH_USER: "logstash-user"
+      LOGSTASH_PASSWORD: "logstash-password"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.1.0
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      elasticsearch-users:
+        condition: service_completed_successfully
+    healthcheck:
+      test: "curl -f http://localhost:5601/status"
+      start_period: 5s
+      interval: 10s
+      timeout: 5s
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+      ELASTICSEARCH_USERNAME: "kibana-user"
+      ELASTICSEARCH_PASSWORD: "kibana-password"
