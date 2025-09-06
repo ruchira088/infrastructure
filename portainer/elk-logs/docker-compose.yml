@@ -1,14 +1,11 @@
-services:
-  api:
-    image: ghcr.io/ruchira088/logging-poc-api:dev
-    ports:
-      - "8080:8080"
-    depends_on:
-      logstash:
-        condition: service_healthy
-    volumes:
-      - ./log-config:/opt/data
+x-passwords:
+  ELASTICSEARCH_PASSWORD: &elasticsearch-password "my-password"
+  KIBANA_USER: &kibana-user "kibana-user"
+  KIBANA_PASSWORD: &kibana-password "kibana-password"
+  LOGSTASH_USER: &logstash-user "logstash-user"
+  LOGSTASH_PASSWORD: &logstash-password "logstash-password"
 
+services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:9.1.0
     healthcheck:
@@ -21,14 +18,14 @@ services:
     ports:
       - "9200:9200"
     environment:
-      ELASTIC_PASSWORD: "my-password"
+      ELASTIC_PASSWORD: *elasticsearch-password
       "discovery.type": single-node
       "xpack.security.http.ssl.enabled": false
 
   logstash:
     image: docker.elastic.co/logstash/logstash:9.1.0
     volumes:
-      - ./logstash/pipeline.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - ./elk/logstash/pipeline.conf:/usr/share/logstash/pipeline/logstash.conf:ro
     ports:
       - "5001:5001"
       - "5002:5002"
@@ -40,6 +37,10 @@ services:
     depends_on:
       elasticsearch:
         condition: service_healthy
+    environment:
+      ELASTICSEARCH_HOST: "http://elasticsearch:9200"
+      ELASTICSEARCH_USER: *logstash-user
+      ELASTICSEARCH_PASSWORD: *logstash-password
 
   elasticsearch-users:
     image: curlimages/curl
@@ -49,15 +50,15 @@ services:
     command:
       - /opt/scripts/create_users.sh
     volumes:
-      - ./elasticsearch:/opt/scripts
+      - ./elk/elasticsearch:/opt/scripts
     environment:
       ELASTICSEARCH_HOST: "http://elasticsearch:9200"
       ELASTICSEARCH_USERNAME: "elastic"
-      ELASTICSEARCH_PASSWORD: "my-password"
-      KIBANA_USER: "kibana-user"
-      KIBANA_PASSWORD: "kibana-password"
-      LOGSTASH_USER: "logstash-user"
-      LOGSTASH_PASSWORD: "logstash-password"
+      ELASTICSEARCH_PASSWORD: *elasticsearch-password
+      KIBANA_USER: *kibana-user
+      KIBANA_PASSWORD: *kibana-password
+      LOGSTASH_USER: *logstash-user
+      LOGSTASH_PASSWORD: *logstash-password
 
   kibana:
     image: docker.elastic.co/kibana/kibana:9.1.0
@@ -75,5 +76,5 @@ services:
       - "5601:5601"
     environment:
       ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
-      ELASTICSEARCH_USERNAME: "kibana-user"
-      ELASTICSEARCH_PASSWORD: "kibana-password"
+      ELASTICSEARCH_USERNAME: *kibana-user
+      ELASTICSEARCH_PASSWORD: *kibana-password
