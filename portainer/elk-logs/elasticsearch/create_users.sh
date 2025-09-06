@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 curl -s -X POST \
-  "$ELASTICSEARCH_HOST/_security/user/$KIBANA_USER" \
+  "$ELASTICSEARCH_HOST/_security/user/$KIBANA_USERNAME" \
   -u "$ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD" \
   -H "Content-Type: application/json" \
   --data "{
@@ -10,7 +10,7 @@ curl -s -X POST \
   }"
 
 curl -s -X POST \
-  "$ELASTICSEARCH_HOST/_security/user/$LOGSTASH_USER" \
+  "$ELASTICSEARCH_HOST/_security/user/$LOGSTASH_USERNAME" \
   -u "$ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD" \
   -H "Content-Type: application/json" \
   --data "{
