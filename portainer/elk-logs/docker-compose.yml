@@ -37,6 +37,8 @@ services:
     depends_on:
       elasticsearch:
         condition: service_healthy
+      elasticsearch-users:
+        condition: service_completed_successfully
     environment:
       ELASTICSEARCH_HOST: "http://elasticsearch:9200"
       ELASTICSEARCH_USERNAME: *logstash-username
@@ -44,7 +46,6 @@ services:
 
   elasticsearch-users:
     image: curlimages/curl
-    restart: unless-stopped
     depends_on:
       elasticsearch:
         condition: service_healthy
@@ -63,6 +64,7 @@ services:
 
   kibana:
     image: docker.elastic.co/kibana/kibana:9.1.0
+    restart: unless-stopped
     depends_on:
       elasticsearch:
         condition: service_healthy
