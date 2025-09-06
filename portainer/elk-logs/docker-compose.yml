@@ -15,8 +15,6 @@ services:
       timeout: 5s
       retries: 10
     mem_limit: 4g
-    ports:
-      - "9200:9200"
     environment:
       ELASTIC_PASSWORD: *elasticsearch-password
       "discovery.type": single-node
