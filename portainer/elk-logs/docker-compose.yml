@@ -25,7 +25,7 @@ services:
     image: docker.elastic.co/logstash/logstash:9.1.0
     restart: unless-stopped
     volumes:
-      - ./elk/logstash/pipeline.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - ./logstash/pipeline.conf:/usr/share/logstash/pipeline/logstash.conf:ro
     ports:
       - "5001:5001"
       - "5002:5002"
@@ -51,7 +51,7 @@ services:
     command:
       - /opt/scripts/create_users.sh
     volumes:
-      - ./elk/elasticsearch:/opt/scripts
+      - ./elasticsearch:/opt/scripts
     environment:
       ELASTICSEARCH_HOST: "http://elasticsearch:9200"
       ELASTICSEARCH_USERNAME: "elastic"
