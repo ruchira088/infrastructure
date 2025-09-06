@@ -8,6 +8,7 @@ x-passwords:
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:9.1.0
+    restart: unless-stopped
     healthcheck:
       test: "curl -f -u elastic:my-password http://localhost:9200/_cluster/health"
       start_period: 5s
@@ -22,6 +23,7 @@ services:
 
   logstash:
     image: docker.elastic.co/logstash/logstash:9.1.0
+    restart: unless-stopped
     volumes:
       - ./elk/logstash/pipeline.conf:/usr/share/logstash/pipeline/logstash.conf:ro
     ports:
@@ -42,6 +44,7 @@ services:
 
   elasticsearch-users:
     image: curlimages/curl
+    restart: unless-stopped
     depends_on:
       elasticsearch:
         condition: service_healthy
