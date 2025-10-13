@@ -11,4 +11,4 @@ spec:
   dnsNames:
     - admin.nginx.home.ruchij.com
     - portainer.home.ruchij.com
-    - kibana.home.ruchij.com
+    - logs.home.ruchij.com

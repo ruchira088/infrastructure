@@ -28,5 +28,5 @@ spec:
                 name: nginx-proxy-manager-service
                 port:
                   name: http-port
-    - host: kibana.home.ruchij.com
+    - host: logs.home.ruchij.com
       http: *httpConfig
