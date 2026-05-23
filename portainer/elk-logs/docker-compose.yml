@@ -16,6 +16,8 @@ services:
       timeout: 5s
       retries: 10
     mem_limit: 4g
+    ports:
+      - "127.0.0.1:9200:9200"
     volumes:
       - es-data:/usr/share/elasticsearch/data
     environment:
