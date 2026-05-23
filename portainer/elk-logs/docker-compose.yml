@@ -11,24 +11,32 @@ services:
     restart: unless-stopped
     healthcheck:
       test: "curl -f -u elastic:$$ELASTIC_PASSWORD http://localhost:9200/_cluster/health"
-      start_period: 5s
+      start_period: 30s
       interval: 10s
       timeout: 5s
       retries: 10
     mem_limit: 4g
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
     environment:
       ELASTIC_PASSWORD: *elasticsearch-password
       "discovery.type": single-node
       "xpack.security.http.ssl.enabled": false
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   logstash:
     image: docker.elastic.co/logstash/logstash:9.4.1
     restart: unless-stopped
+    mem_limit: 2g
     volumes:
       - ./logstash/pipeline.conf:/usr/share/logstash/pipeline/logstash.conf:ro
     ports:
-      - "5001:5001"
-      - "5002:5002"
+      - "127.0.0.1:5001:5001"
+      - "127.0.0.1:5002:5002"
     healthcheck:
       test: "curl -f http://localhost:9600/"
       interval: 30s
@@ -43,6 +51,12 @@ services:
       ELASTICSEARCH_HOST: "http://elasticsearch:9200"
       ELASTICSEARCH_USERNAME: *logstash-username
       ELASTICSEARCH_PASSWORD: *logstash-password
+      LS_JAVA_OPTS: "-Xms1g -Xmx1g"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   elasticsearch-users:
     image: curlimages/curl
@@ -61,6 +75,11 @@ services:
       KIBANA_PASSWORD: *kibana-password
       LOGSTASH_USERNAME: *logstash-username
       LOGSTASH_PASSWORD: *logstash-password
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   kibana:
     image: docker.elastic.co/kibana/kibana:9.4.1
@@ -75,9 +94,18 @@ services:
       start_period: 5s
       interval: 10s
       timeout: 5s
+      retries: 10
     ports:
-      - "5601:5601"
+      - "127.0.0.1:5601:5601"
     environment:
       ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
       ELASTICSEARCH_USERNAME: *kibana-username
       ELASTICSEARCH_PASSWORD: *kibana-password
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  es-data:
