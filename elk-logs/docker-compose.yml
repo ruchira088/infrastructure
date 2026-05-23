@@ -4,6 +4,8 @@ x-passwords:
   KIBANA_PASSWORD: &kibana-password "kibana-password"
   LOGSTASH_USERNAME: &logstash-username "logstash-username"
   LOGSTASH_PASSWORD: &logstash-password "logstash-password"
+  ADMIN_USERNAME: &admin-username "admin"
+  ADMIN_PASSWORD: &admin-password "admin-password"
 
 services:
   elasticsearch:
@@ -77,6 +79,8 @@ services:
       KIBANA_PASSWORD: *kibana-password
       LOGSTASH_USERNAME: *logstash-username
       LOGSTASH_PASSWORD: *logstash-password
+      ADMIN_USERNAME: *admin-username
+      ADMIN_PASSWORD: *admin-password
       LOG_RETENTION_DAYS: "30"
     logging:
       driver: json-file
@@ -104,6 +108,9 @@ services:
       ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
       ELASTICSEARCH_USERNAME: *kibana-username
       ELASTICSEARCH_PASSWORD: *kibana-password
+      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: "kibana-encrypted-saved-objects-key-please-rotate"
+      XPACK_REPORTING_ENCRYPTIONKEY: "kibana-reporting-encryption-key-please-rotate-now"
+      XPACK_SECURITY_ENCRYPTIONKEY: "kibana-security-encryption-key-please-rotate-now"
     logging:
       driver: json-file
       options:

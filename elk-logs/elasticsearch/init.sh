@@ -4,7 +4,7 @@ set -eu
 LOG_RETENTION_DAYS="${LOG_RETENTION_DAYS:-30}"
 
 curl -s --fail-with-body -X PUT \
-  "$ELASTICSEARCH_HOST/_ilm/policy/logs_policy" \
+  "$ELASTICSEARCH_HOST/_ilm/policy/app_logs_policy" \
   -u "$ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD" \
   -H "Content-Type: application/json" \
   --data "{
@@ -23,15 +23,15 @@ curl -s --fail-with-body -X PUT \
   }"
 
 curl -s --fail-with-body -X PUT \
-  "$ELASTICSEARCH_HOST/_index_template/logs_template" \
+  "$ELASTICSEARCH_HOST/_index_template/app_logs_template" \
   -u "$ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD" \
   -H "Content-Type: application/json" \
   --data '{
-    "index_patterns": [ "logs-*" ],
+    "index_patterns": [ "app-logs-*" ],
     "priority": 100,
     "template": {
       "settings": {
-        "index.lifecycle.name": "logs_policy",
+        "index.lifecycle.name": "app_logs_policy",
         "number_of_shards": 1,
         "number_of_replicas": 0
       }
@@ -46,7 +46,7 @@ curl -s --fail-with-body -X PUT \
     "cluster": [ "monitor", "manage_index_templates" ],
     "indices": [
       {
-        "names": [ "logs*" ],
+        "names": [ "app-logs-*" ],
         "privileges": [ "create_index", "create", "index", "write", "view_index_metadata" ]
       }
     ]
@@ -68,4 +68,13 @@ curl -s --fail-with-body -X POST \
   --data "{
     \"password\" : \"$LOGSTASH_PASSWORD\",
     \"roles\" : [ \"logstash_writer\" ]
+  }"
+
+curl -s --fail-with-body -X POST \
+  "$ELASTICSEARCH_HOST/_security/user/$ADMIN_USERNAME" \
+  -u "$ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD" \
+  -H "Content-Type: application/json" \
+  --data "{
+    \"password\" : \"$ADMIN_PASSWORD\",
+    \"roles\" : [ \"kibana_admin\" ]
   }"
