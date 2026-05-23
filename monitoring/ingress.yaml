@@ -3,8 +3,13 @@ kind: Ingress
 metadata:
   name: grafana-ingress
   namespace: monitoring
+  annotations:
+    cert-manager.io/cluster-issuer: lets-encrypt
 spec:
-  ingressClassName: traefik
+  tls:
+    - secretName: grafana-tls
+      hosts:
+        - grafana.home.ruchij.com
   rules:
     - host: grafana.home.ruchij.com
       http:
@@ -16,7 +21,3 @@ spec:
                 name: kube-prometheus-stack-grafana
                 port:
                   number: 80
-  tls:
-    - hosts:
-        - grafana.home.ruchij.com
-      secretName: grafana-tls

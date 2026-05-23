@@ -30,7 +30,6 @@ helm --kube-context "$KUBE_CONTEXT" upgrade --install "$RELEASE" \
   --timeout 10m \
   --wait
 
-kubectl --context "$KUBE_CONTEXT" apply -n "$NAMESPACE" -f certificate.yaml
 kubectl --context "$KUBE_CONTEXT" apply -n "$NAMESPACE" -f ingress.yaml
 
 echo
