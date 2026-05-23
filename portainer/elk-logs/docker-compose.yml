@@ -45,7 +45,7 @@ services:
     depends_on:
       elasticsearch:
         condition: service_healthy
-      elasticsearch-users:
+      elasticsearch-init:
         condition: service_completed_successfully
     environment:
       ELASTICSEARCH_HOST: "http://elasticsearch:9200"
@@ -58,13 +58,13 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  elasticsearch-users:
+  elasticsearch-init:
     image: curlimages/curl
     depends_on:
       elasticsearch:
         condition: service_healthy
     command:
-      - /opt/scripts/create_users.sh
+      - /opt/scripts/init.sh
     volumes:
       - ./elasticsearch:/opt/scripts
     environment:
@@ -75,6 +75,7 @@ services:
       KIBANA_PASSWORD: *kibana-password
       LOGSTASH_USERNAME: *logstash-username
       LOGSTASH_PASSWORD: *logstash-password
+      LOG_RETENTION_DAYS: "30"
     logging:
       driver: json-file
       options:
@@ -87,7 +88,7 @@ services:
     depends_on:
       elasticsearch:
         condition: service_healthy
-      elasticsearch-users:
+      elasticsearch-init:
         condition: service_completed_successfully
     healthcheck:
       test: "curl -f http://localhost:5601/status"
