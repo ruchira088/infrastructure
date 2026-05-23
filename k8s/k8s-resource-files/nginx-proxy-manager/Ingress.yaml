@@ -3,12 +3,15 @@ kind: Ingress
 metadata:
   name: nginx-proxy-manager-ingress
   namespace: nginx-proxy-manager
+  annotations:
+    cert-manager.io/cluster-issuer: lets-encrypt
 spec:
   tls:
     - secretName: nginx-proxy-manager-tls
       hosts:
         - admin.nginx.home.ruchij.com
         - portainer.home.ruchij.com
+        - logs.home.ruchij.com
   rules:
     - host: admin.nginx.home.ruchij.com
       http:

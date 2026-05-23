@@ -7,7 +7,7 @@ x-passwords:
 
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:9.1.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.4.1
     restart: unless-stopped
     healthcheck:
       test: "curl -f -u elastic:$$ELASTIC_PASSWORD http://localhost:9200/_cluster/health"
@@ -22,7 +22,7 @@ services:
       "xpack.security.http.ssl.enabled": false
 
   logstash:
-    image: docker.elastic.co/logstash/logstash:9.1.0
+    image: docker.elastic.co/logstash/logstash:9.4.1
     restart: unless-stopped
     volumes:
       - ./logstash/pipeline.conf:/usr/share/logstash/pipeline/logstash.conf:ro
@@ -63,7 +63,7 @@ services:
       LOGSTASH_PASSWORD: *logstash-password
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:9.1.0
+    image: docker.elastic.co/kibana/kibana:9.4.1
     restart: unless-stopped
     depends_on:
       elasticsearch:
