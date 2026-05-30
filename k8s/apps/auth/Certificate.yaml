@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: tinyauth-certificate
+  namespace: auth
+spec:
+  secretName: tinyauth-tls-secret
+  issuerRef:
+    kind: ClusterIssuer
+    name: lets-encrypt
+  dnsNames:
+    - auth.home.ruchij.com

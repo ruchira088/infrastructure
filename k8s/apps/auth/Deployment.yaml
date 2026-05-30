@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tinyauth-deployment
+  namespace: auth
+spec:
+  selector:
+    matchLabels:
+      app: tinyauth
+  template:
+    metadata:
+      labels:
+        app: tinyauth
+    spec:
+      # The tinyauth Service injects a TINYAUTH_PORT=tcp://... env var, which
+      # tinyauth would misread as its own listen-port config. Disable injection.
+      enableServiceLinks: false
+      containers:
+        - name: tinyauth-container
+          image: ghcr.io/steveiliop56/tinyauth:v5
+          ports:
+            - name: tinyauth-port
+              containerPort: 3000
+          env:
+            # Public URL of the tinyauth login page. The session cookie is
+            # scoped to this URL's parent domain (.home.ruchij.com), so logging
+            # in here authorizes apps on any *.home.ruchij.com host (any
+            # namespace) that delegate auth to tinyauth.
+            - name: TINYAUTH_APPURL
+              value: https://auth.home.ruchij.com
+            # Served over HTTPS, so the cookie must carry the Secure flag.
+            - name: TINYAUTH_AUTH_SECURECOOKIE
+              value: "true"
+            - name: TINYAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: secret
+            - name: TINYAUTH_AUTH_USERS
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: users
+          readinessProbe:
+            tcpSocket:
+              port: tinyauth-port
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: tinyauth-port
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 128Mi

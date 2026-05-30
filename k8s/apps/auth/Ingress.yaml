@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tinyauth-ingress
+  namespace: auth
+spec:
+  tls:
+    - secretName: tinyauth-tls-secret
+      hosts:
+        - auth.home.ruchij.com
+  rules:
+    - host: auth.home.ruchij.com
+      http:
+        paths:
+          - pathType: ImplementationSpecific
+            backend:
+              service:
+                name: tinyauth
+                port:
+                  name: tinyauth-port
