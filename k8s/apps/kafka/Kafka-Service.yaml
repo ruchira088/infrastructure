@@ -1,0 +1,29 @@
+# Headless service backing the StatefulSet (stable per-pod DNS).
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-headless
+  namespace: kafka
+spec:
+  clusterIP: None
+  selector:
+    app: kafka
+  ports:
+    - name: client
+      port: 9092
+    - name: controller
+      port: 9093
+---
+# Stable client-facing service. In-cluster clients bootstrap against this,
+# then get redirected to the advertised per-pod address.
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-broker
+  namespace: kafka
+spec:
+  selector:
+    app: kafka
+  ports:
+    - name: client
+      port: 9092

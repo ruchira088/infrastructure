@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: schema-registry-deployment
+  namespace: kafka
+spec:
+  selector:
+    matchLabels:
+      app: schema-registry
+  template:
+    metadata:
+      labels:
+        app: schema-registry
+    spec:
+      # Kubernetes injects Docker-style service env vars (e.g. SCHEMA_REGISTRY_PORT
+      # from the schema-registry Service), which collides with Confluent's config
+      # checks and crashes the container. Disable the injection.
+      enableServiceLinks: false
+      containers:
+        - name: schema-registry-container
+          image: confluentinc/cp-schema-registry:7.9.2
+          ports:
+            - name: schema-port
+              containerPort: 8081
+          env:
+            - name: SCHEMA_REGISTRY_HOST_NAME
+              value: schema-registry
+            - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
+              value: PLAINTEXT://kafka-broker-0.kafka-headless.kafka.svc.cluster.local:9092
+            - name: SCHEMA_REGISTRY_LISTENERS
+              value: http://0.0.0.0:8081
+          readinessProbe:
+            httpGet:
+              port: schema-port
+              path: /subjects
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              port: schema-port
+              path: /subjects
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              memory: 1Gi

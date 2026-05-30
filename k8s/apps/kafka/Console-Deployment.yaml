@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redpanda-console-deployment
+  namespace: kafka
+spec:
+  selector:
+    matchLabels:
+      app: redpanda-console
+  template:
+    metadata:
+      labels:
+        app: redpanda-console
+    spec:
+      containers:
+        - name: redpanda-console-container
+          image: redpandadata/console:v2.8.5
+          ports:
+            - name: console-port
+              containerPort: 8080
+          env:
+            - name: CONFIG_FILEPATH
+              value: /etc/console/config.yaml
+          readinessProbe:
+            httpGet:
+              port: console-port
+              path: /admin/health
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              port: console-port
+              path: /admin/health
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/console
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: redpanda-console-config
