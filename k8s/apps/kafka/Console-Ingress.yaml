@@ -3,6 +3,9 @@ kind: Ingress
 metadata:
   name: kafka-console-ingress
   namespace: kafka
+  annotations:
+    # Require login (via the shared tinyauth gateway) for the Console UI.
+    traefik.ingress.kubernetes.io/router.middlewares: kafka-tinyauth-forwardauth@kubernetescrd
 spec:
   tls:
     - secretName: kafka-console-tls-secret
