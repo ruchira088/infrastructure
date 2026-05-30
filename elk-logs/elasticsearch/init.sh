@@ -52,6 +52,20 @@ curl -s --fail-with-body -X PUT \
     ]
   }'
 
+curl -s --fail-with-body -X PUT \
+  "$ELASTICSEARCH_HOST/_security/role/all_indices_reader" \
+  -u "$ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD" \
+  -H "Content-Type: application/json" \
+  --data '{
+    "cluster": [ "monitor" ],
+    "indices": [
+      {
+        "names": [ "*" ],
+        "privileges": [ "read", "view_index_metadata" ]
+      }
+    ]
+  }'
+
 curl -s --fail-with-body -X POST \
   "$ELASTICSEARCH_HOST/_security/user/$KIBANA_USERNAME" \
   -u "$ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD" \
@@ -76,5 +90,5 @@ curl -s --fail-with-body -X POST \
   -H "Content-Type: application/json" \
   --data "{
     \"password\" : \"$ADMIN_PASSWORD\",
-    \"roles\" : [ \"kibana_admin\" ]
+    \"roles\" : [ \"kibana_admin\", \"all_indices_reader\" ]
   }"

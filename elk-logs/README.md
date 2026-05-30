@@ -21,7 +21,7 @@ elk-logs/
 ├── .env                    # Secrets — gitignored
 ├── .env.example            # Template for .env (committed)
 ├── elasticsearch/
-│   └── init.sh             # Bootstrap: ILM policy, index template, role, users
+│   └── init.sh             # Bootstrap: ILM policy, index template, roles, users
 └── logstash/
     └── pipeline.conf       # Ingestion pipeline (TCP/UDP in → ES out)
 ```
@@ -45,14 +45,14 @@ elk-logs/
    ```bash
    docker compose logs -f elasticsearch-init
    ```
-   It exits 0 once the ILM policy, index template, role, and users are created.
+   It exits 0 once the ILM policy, index template, roles, and users are created.
 
 ## Logging in to Kibana
 
 Open `http://127.0.0.1:5601` and sign in with one of:
 
 - `elastic` / `$ELASTICSEARCH_PASSWORD` — built-in cluster superuser. Reserve for cluster admin.
-- `$ADMIN_USERNAME` / `$ADMIN_PASSWORD` — `kibana_admin` role. Use for day-to-day UI work.
+- `$ADMIN_USERNAME` / `$ADMIN_PASSWORD` — `kibana_admin` + `all_indices_reader` roles. Use for day-to-day UI work. `kibana_admin` alone only manages Kibana saved objects and grants **no** access to data indices, so `all_indices_reader` (read + `view_index_metadata` on all indices, `*`) is what lets this user create data views and search logs.
 
 The Kibana service account (`$KIBANA_USERNAME`) cannot log into the UI — it has only `kibana_system` and exists for Kibana's internal use against Elasticsearch.
 
@@ -83,7 +83,7 @@ Use `LogstashTcpSocketAppender` (not `LogstashAccessTcpSocketAppender` — that 
 
 ## Operations
 
-Re-run the bootstrap (idempotent — overwrites policy, template, role, users):
+Re-run the bootstrap (idempotent — overwrites policy, template, roles, users):
 ```bash
 docker compose up -d elasticsearch-init --force-recreate
 ```
