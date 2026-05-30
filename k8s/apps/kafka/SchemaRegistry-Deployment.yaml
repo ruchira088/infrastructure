@@ -29,17 +29,24 @@ spec:
               value: PLAINTEXT://kafka-broker-0.kafka-headless.kafka.svc.cluster.local:9092
             - name: SCHEMA_REGISTRY_LISTENERS
               value: http://0.0.0.0:8081
+          # CP 8.x schema-registry can take a while to bind its HTTP listener
+          # (Kafka store sync + group join). A startup probe gives it headroom
+          # before liveness takes over, so slow starts don't trigger a crash loop.
+          startupProbe:
+            httpGet:
+              port: schema-port
+              path: /subjects
+            periodSeconds: 5
+            failureThreshold: 30
           readinessProbe:
             httpGet:
               port: schema-port
               path: /subjects
-            initialDelaySeconds: 20
             periodSeconds: 10
           livenessProbe:
             httpGet:
               port: schema-port
               path: /subjects
-            initialDelaySeconds: 30
             periodSeconds: 15
           resources:
             requests:
