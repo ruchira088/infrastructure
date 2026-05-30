@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: kafka-container
-          image: confluentinc/cp-kafka:7.9.2
+          image: confluentinc/cp-kafka:8.2.1
           ports:
             - name: client
               containerPort: 9092

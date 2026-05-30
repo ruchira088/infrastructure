@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: redpanda-console-container
-          image: redpandadata/console:v2.8.5
+          image: redpandadata/console:v3.7.4
           ports:
             - name: console-port
               containerPort: 8080
