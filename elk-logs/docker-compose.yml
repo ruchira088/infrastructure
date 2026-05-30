@@ -99,9 +99,9 @@ services:
       ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
       ELASTICSEARCH_USERNAME: ${KIBANA_USERNAME}
       ELASTICSEARCH_PASSWORD: ${KIBANA_PASSWORD}
-      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: "kibana-encrypted-saved-objects-key-please-rotate"
-      XPACK_REPORTING_ENCRYPTIONKEY: "kibana-reporting-encryption-key-please-rotate-now"
-      XPACK_SECURITY_ENCRYPTIONKEY: "kibana-security-encryption-key-please-rotate-now"
+      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: ${KIBANA_ENCRYPTEDSAVEDOBJECTS_KEY}
+      XPACK_REPORTING_ENCRYPTIONKEY: ${KIBANA_REPORTING_KEY}
+      XPACK_SECURITY_ENCRYPTIONKEY: ${KIBANA_SECURITY_KEY}
     logging:
       driver: json-file
       options:

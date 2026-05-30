@@ -33,9 +33,9 @@ elk-logs/
    cp .env.example .env
    $EDITOR .env
    ```
-2. Generate Kibana encryption keys and paste them into `docker-compose.yml` (under the `kibana.environment` block). Each must be 32+ chars:
+2. Generate the three Kibana encryption keys and set them as the `KIBANA_*_KEY` values in `.env`. Each must be 32+ chars:
    ```bash
-   openssl rand -base64 32
+   openssl rand -base64 32   # run once per key: KIBANA_ENCRYPTEDSAVEDOBJECTS_KEY, KIBANA_REPORTING_KEY, KIBANA_SECURITY_KEY
    ```
 3. Bring the stack up:
    ```bash
@@ -113,5 +113,5 @@ docker compose down -v
 
 - **Single-node Elasticsearch** (`discovery.type: single-node`). No HA. The index template sets `number_of_replicas: 0` so cluster health stays green.
 - **TLS is disabled on ES** (`xpack.security.http.ssl.enabled: false`). Traffic between containers is cleartext — fine on the Docker network, not acceptable if you ever expose port 9200 publicly.
-- **Kibana encryption keys** (`XPACK_*_ENCRYPTIONKEY` in `docker-compose.yml`) are still hardcoded. Rotating `XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY` after Kibana has stored encrypted saved objects (Fleet sources, alerting connectors, etc.) will make those objects unreadable. Use the `kibana-encryption-keys` CLI for supported rotation.
+- **Kibana encryption keys** (the `KIBANA_*_KEY` values in `.env`, wired into `XPACK_*_ENCRYPTIONKEY` in `docker-compose.yml`) must stay stable once Kibana has stored encrypted data. Rotating `KIBANA_ENCRYPTEDSAVEDOBJECTS_KEY` after Kibana has stored encrypted saved objects (Fleet sources, alerting connectors, etc.) will make those objects unreadable. Use the `kibana-encryption-keys` CLI for supported rotation.
 - **Re-running `init.sh` overwrites users back to the values in `.env`.** If you change a password through the Kibana UI, the next `docker compose up` will reset it. Edit `.env` instead.
