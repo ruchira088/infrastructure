@@ -6,9 +6,10 @@ metadata:
 spec:
   selector:
     app: plex
-  type: NodePort
+  # ClusterIP only (used by the Ingress). The pod uses hostNetwork, so LAN
+  # clients reach it directly on 192.168.68.64:32400. A NodePort on 32400
+  # would make kube-proxy intercept that port.
   ports:
     - name: plex-port
       port: 32400
       targetPort: plex-port
-      nodePort: 32400

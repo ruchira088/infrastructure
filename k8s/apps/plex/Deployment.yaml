@@ -4,6 +4,10 @@ metadata:
   name: plex-deployment
   namespace: plex
 spec:
+  # hostNetwork binds :32400 on the node, so the old pod must stop before the
+  # new one can be scheduled
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: plex
@@ -12,9 +16,21 @@ spec:
       labels:
         app: plex
     spec:
+      # Run on the node's network (192.168.68.64) so devices on the home LAN
+      # connect to Plex directly on :32400 with their real IPs, and can
+      # discover it via GDM. Uses ports 32400, 1900/udp and 32410-32414/udp
+      # on the host.
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: plex-container
           image: plexinc/pms-docker:1.43.4.10903-e5521bd8c
+          env:
+            # Tell clients to try the LAN address first
+            - name: ADVERTISE_IP
+              value: http://192.168.68.64:32400/
+            - name: TZ
+              value: Australia/Sydney
           readinessProbe:
             httpGet:
               port: plex-port
@@ -24,8 +40,9 @@ spec:
               port: plex-port
               path: /web
           startupProbe:
+            # Container init (first-run setup) alone can take ~1 minute
             periodSeconds: 5
-            failureThreshold: 10
+            failureThreshold: 60
             httpGet:
               port: plex-port
               path: /web
