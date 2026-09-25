@@ -9,3 +9,5 @@ env/*
 kubeconfig
 
 .env
+
+.remember/
