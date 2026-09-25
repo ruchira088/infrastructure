@@ -17,6 +17,7 @@ monitoring/                # kube-prometheus-stack (Prometheus + Grafana) via He
 elk-logs/                  # Elasticsearch / Logstash / Kibana stack for application logs
 portainer/                 # Docker Compose stacks deployed through Portainer
 mergerfs/                  # Disk pool + Samba share on the home server
+torrents/                  # qBittorrent on k3s, routed through ExpressVPN (gluetun sidecar)
 github/terraform/          # AWS IAM role that GitHub Actions assumes via OIDC
 raid/, samba/              # Runbooks: mdadm RAID-5 and CIFS client mounts
 ```
@@ -34,6 +35,7 @@ Hosted on the `home` k3s cluster behind Traefik. TLS certificates come from Let'
 | Nginx Proxy Manager | https://admin.nginx.home.ruchij.com | `k8s/apps/nginx-proxy-manager` |
 | Headlamp (cluster UI) | https://headlamp.home.ruchij.com | `k8s/k8s-resource-files/headlamp` |
 | Grafana | https://grafana.home.ruchij.com | `monitoring/` |
+| qBittorrent (via ExpressVPN) | https://torrents.home.ruchij.com | `torrents/` |
 
 Nginx Proxy Manager also routes `portainer.home.ruchij.com` and `logs.home.ruchij.com` (Kibana) to services that run outside the cluster.
 

@@ -1,0 +1,158 @@
+# qBittorrent with all traffic forced through ExpressVPN by a gluetun sidecar.
+# Containers in a pod share a network namespace, so gluetun's tun0 and iptables
+# kill switch apply to qBittorrent too: if the tunnel drops, egress is blocked.
+#
+# Gluetun's built-in ExpressVPN server list is stale (old servers/CA fail the TLS
+# handshake), so it runs as a `custom` provider with the same .ovpn file the
+# video-downloader forward-proxy uses.
+#
+# Requires the `expressvpn-credentials` Secret (not committed), created from
+# AWS Secrets Manager (full install steps in torrents/README.md):
+#
+#   CREDS=$(aws secretsmanager get-secret-value --region ap-southeast-2 \
+#     --secret-id ExpressVPN/credentials --query SecretString --output text)
+#   kubectl --context home -n torrents create secret generic expressvpn-credentials \
+#     --from-literal=OPENVPN_USER="$(jq -r .OPENVPN_USER <<<"$CREDS")" \
+#     --from-literal=OPENVPN_PASSWORD="$(jq -r .OPENVPN_PASS <<<"$CREDS")" \
+#     --from-literal=expressvpn.ovpn="$(aws secretsmanager get-secret-value --region ap-southeast-2 \
+#       --secret-id ExpressVPN/vpn-config/au --query SecretString --output text)"
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrent-deployment
+  namespace: torrents
+spec:
+  # hostPath config must never have two writers
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: qbittorrent
+  template:
+    metadata:
+      labels:
+        app: qbittorrent
+    spec:
+      initContainers:
+        # Native sidecar: qBittorrent only starts once the startupProbe passes (VPN up)
+        - name: gluetun-container
+          image: qmcgaw/gluetun:v3.41.3
+          restartPolicy: Always
+          # Gluetun needs an IP in the .ovpn `remote` line, but ExpressVPN rotates
+          # server IPs, so resolve the hostname on every (re)start. Uses k3s's
+          # CoreDNS IP directly: after a restart /etc/resolv.conf points at
+          # gluetun's own (not yet running) DNS server.
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              read -r _ VPN_HOST VPN_PORT <<EOF
+              $(grep -m1 '^remote ' /vpn-config/expressvpn.ovpn)
+              EOF
+              VPN_IP=$(nslookup -type=A "$VPN_HOST" 10.43.0.10 | awk '/^Address/ && $NF !~ /[:#]/ {print $NF}' | shuf -n1)
+              [ -n "$VPN_IP" ] || { echo "Could not resolve $VPN_HOST"; exit 1; }
+              echo "Resolved $VPN_HOST to $VPN_IP"
+              sed "s/^remote .*/remote $VPN_IP $VPN_PORT/" /vpn-config/expressvpn.ovpn > /gluetun/custom.conf
+              exec /gluetun-entrypoint
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+          env:
+            - name: VPN_SERVICE_PROVIDER
+              value: custom
+            - name: VPN_TYPE
+              value: openvpn
+            - name: OPENVPN_CUSTOM_CONFIG
+              value: /gluetun/custom.conf
+            - name: OPENVPN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: expressvpn-credentials
+                  key: OPENVPN_USER
+            - name: OPENVPN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: expressvpn-credentials
+                  key: OPENVPN_PASSWORD
+            # Allow the web UI in from Traefik/kubelet
+            - name: FIREWALL_INPUT_PORTS
+              value: "8080"
+            # k3s pod and service CIDRs stay outside the tunnel
+            - name: FIREWALL_OUTBOUND_SUBNETS
+              value: 10.42.0.0/16,10.43.0.0/16
+            - name: TZ
+              value: Australia/Sydney
+          startupProbe:
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 36
+            exec:
+              command:
+                - /gluetun-entrypoint
+                - healthcheck
+          livenessProbe:
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+            exec:
+              command:
+                - /gluetun-entrypoint
+                - healthcheck
+          volumeMounts:
+            - mountPath: /dev/net/tun
+              name: tun-device
+            - mountPath: /vpn-config
+              name: vpn-config
+              readOnly: true
+            - mountPath: /gluetun
+              name: gluetun-data
+      containers:
+        - name: qbittorrent-container
+          image: lscr.io/linuxserver/qbittorrent:5.2.3_v2.0.14-ls477
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: Australia/Sydney
+            - name: WEBUI_PORT
+              value: "8080"
+          readinessProbe:
+            tcpSocket:
+              port: webui-port
+          livenessProbe:
+            periodSeconds: 30
+            tcpSocket:
+              port: webui-port
+          ports:
+            - name: webui-port
+              containerPort: 8080
+          volumeMounts:
+            - mountPath: /config
+              name: qbittorrent-config
+            - mountPath: /downloads
+              name: downloads-folder
+      volumes:
+        - name: tun-device
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice
+        - name: vpn-config
+          secret:
+            secretName: expressvpn-credentials
+            items:
+              - key: expressvpn.ovpn
+                path: expressvpn.ovpn
+        - name: gluetun-data
+          emptyDir: {}
+        - name: qbittorrent-config
+          hostPath:
+            path: /home/ruchira/Data/qbittorrent
+            type: Directory
+        - name: downloads-folder
+          hostPath:
+            path: /mnt/storage/torrents
+            type: Directory

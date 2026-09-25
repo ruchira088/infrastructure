@@ -12,6 +12,7 @@ Personal home-lab and AWS infrastructure: plain Kubernetes manifests, Terraform,
 |---|---|---|
 | `k8s/apps/<app>/` | k3s cluster on the `home` server (kube context `home`) | `kubectl --context home apply -f k8s/apps/<app>` |
 | `k8s/setup-k8s.yaml` + `k8s/k8s-resource-files/` | Cluster bootstrap: cert-manager, `lets-encrypt` ClusterIssuer, Headlamp | `ansible-playbook k8s/setup-k8s.yaml` (run from `k8s/`, uses `~/.kube/config`) |
+| `torrents/` | qBittorrent + gluetun ExpressVPN sidecar on the k3s cluster; follows the `k8s/apps/` conventions. Needs host dirs and the `expressvpn-credentials` Secret first (see `torrents/README.md`) | `kubectl --context home apply -f torrents` |
 | `monitoring/` | kube-prometheus-stack Helm release | `monitoring/install.sh` (`KUBE_CONTEXT` defaults to `home`) |
 | `elk-logs/` | Docker Compose ELK stack (see `elk-logs/README.md`) | `docker compose up -d` with a `.env` copied from `.env.example` |
 | `portainer/*/docker-compose.yml` | Stacks deployed through Portainer on a Docker host | Portainer UI |

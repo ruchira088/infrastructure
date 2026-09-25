@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: torrents-certificate
+  namespace: torrents
+spec:
+  secretName: torrents-tls-secret
+  issuerRef:
+    kind: ClusterIssuer
+    name: lets-encrypt
+  dnsNames:
+    - torrents.home.ruchij.com
