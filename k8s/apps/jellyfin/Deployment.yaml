@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: jellyfin-container
-          image: jellyfin/jellyfin:10.10.7
+          image: jellyfin/jellyfin:12.1
           readinessProbe:
             httpGet:
               port: jellyfin-port

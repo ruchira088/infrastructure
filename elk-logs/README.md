@@ -6,9 +6,9 @@ A self-hosted ELK (Elasticsearch, Logstash, Kibana) stack for collecting applica
 
 | Service              | Image                                                  | Purpose                                                       | Host port              |
 | -------------------- | ------------------------------------------------------ | ------------------------------------------------------------- | ---------------------- |
-| `elasticsearch`      | `docker.elastic.co/elasticsearch/elasticsearch:9.4.1`  | Storage + search                                              | 9200 (127.0.0.1)       |
-| `logstash`           | `docker.elastic.co/logstash/logstash:9.4.1`            | Log ingestion pipeline                                        | 5001/tcp, 5002/udp (127.0.0.1) |
-| `kibana`             | `docker.elastic.co/kibana/kibana:9.4.1`                | UI                                                            | 5601 (127.0.0.1)       |
+| `elasticsearch`      | `docker.elastic.co/elasticsearch/elasticsearch:9.5.4`  | Storage + search                                              | 9200 (127.0.0.1)       |
+| `logstash`           | `docker.elastic.co/logstash/logstash:9.5.4`            | Log ingestion pipeline                                        | 5001/tcp, 5002/udp (127.0.0.1) |
+| `kibana`             | `docker.elastic.co/kibana/kibana:9.5.4`                | UI                                                            | 5601 (127.0.0.1)       |
 | `elasticsearch-init` | `curlimages/curl`                                      | One-shot bootstrap (ILM policy, index template, roles, users) | —                      |
 
 All published ports are bound to `127.0.0.1` only. To accept logs from other machines, either change the port mappings to `0.0.0.0` in `docker-compose.yml` or proxy them through nginx-proxy-manager (NPM supports TCP/UDP streams for ports 5001/5002).
