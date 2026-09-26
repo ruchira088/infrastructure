@@ -4,6 +4,9 @@ metadata:
   name: jellyfin-deployment
   namespace: jellyfin
 spec:
+  # hostPath config (SQLite library database) must never have two writers
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: jellyfin
@@ -34,32 +37,17 @@ spec:
             - name: jellyfin-port
               containerPort: 8096
           volumeMounts:
-            - mountPath: /data/movies
-              name: movies-folder
-            - mountPath: /data/movies-1
-              name: movies-folder-1
-            - mountPath: /data/tv-shows
-              name: tv-shows-folder
-            - mountPath: /data/tv-shows-1
-              name: tv-shows-folder-1
+            # qBittorrent's download folder (see torrents/). Read-only so Jellyfin
+            # can't modify or delete files the torrent client is still seeding.
+            - mountPath: /data/torrents
+              name: torrents-folder
+              readOnly: true
             - mountPath: /config
               name: jellyfin-config
       volumes:
-        - name: movies-folder
+        - name: torrents-folder
           hostPath:
-            path: /media/plex/movies
-            type: Directory
-        - name: movies-folder-1
-          hostPath:
-            path: /media/disk/media/movies
-            type: Directory
-        - name: tv-shows-folder
-          hostPath:
-            path: /media/plex/tv-shows
-            type: Directory
-        - name: tv-shows-folder-1
-          hostPath:
-            path: /media/disk/media/tv-shows
+            path: /mnt/storage/torrents
             type: Directory
         - name: jellyfin-config
           hostPath:
