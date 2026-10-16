@@ -4,6 +4,11 @@ metadata:
   name: schema-registry-deployment
   namespace: kafka
 spec:
+  # Old and new pods share SCHEMA_REGISTRY_HOST_NAME and the same leader-election
+  # group; during a rolling update the new pod times out joining the group and
+  # crash-loops. Stop the old pod first.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: schema-registry
@@ -16,6 +21,16 @@ spec:
       # from the schema-registry Service), which collides with Confluent's config
       # checks and crashes the container. Disable the injection.
       enableServiceLinks: false
+      # After a node reboot this pod can start before the broker, exit 1, and
+      # crash-loop. The headless DNS name only resolves once the broker is
+      # Ready, so block here until it accepts connections.
+      initContainers:
+        - name: wait-for-kafka
+          image: busybox:1.37.0
+          command:
+            - sh
+            - -c
+            - until nc -z -w 2 kafka-broker-0.kafka-headless.kafka.svc.cluster.local 9092; do echo waiting for kafka; sleep 2; done
       containers:
         - name: schema-registry-container
           image: confluentinc/cp-schema-registry:8.3.2

@@ -12,6 +12,14 @@ spec:
       labels:
         app: redpanda-console
     spec:
+      # Wait for the broker so the console doesn't crash-loop after a node reboot.
+      initContainers:
+        - name: wait-for-kafka
+          image: busybox:1.37.0
+          command:
+            - sh
+            - -c
+            - until nc -z -w 2 kafka-broker-0.kafka-headless.kafka.svc.cluster.local 9092; do echo waiting for kafka; sleep 2; done
       containers:
         - name: redpanda-console-container
           image: redpandadata/console:v3.12.0
