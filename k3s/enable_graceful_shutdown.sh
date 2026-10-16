@@ -11,32 +11,45 @@ set -euo pipefail
 
 GRACE=60s
 CRITICAL_GRACE=10s
-CONFIG=/etc/rancher/k3s/config.yaml
+# k3s starts the kubelet with --config-dir pointing here; files sort after
+# k3s's own 00-k3s-defaults.conf and override it. The --shutdown-grace-period
+# kubelet flags were removed in Kubernetes 1.35, so this must be config, not
+# kubelet-arg in /etc/rancher/k3s/config.yaml (that crash-loops k3s).
+DROPIN_DIR=/var/lib/rancher/k3s/agent/etc/kubelet.conf.d
+DROPIN=$DROPIN_DIR/99-graceful-shutdown.conf
+K3S_CONFIG=/etc/rancher/k3s/config.yaml
 
 [[ $EUID -eq 0 ]] || { echo "Run as root" >&2; exit 1; }
 
-if [[ -f $CONFIG ]] && grep -q 'kubelet-arg' "$CONFIG"; then
-  echo "$CONFIG already has kubelet-arg; merge these by hand:" >&2
-  echo "  - shutdown-grace-period=$GRACE" >&2
-  echo "  - shutdown-grace-period-critical-pods=$CRITICAL_GRACE" >&2
-  exit 1
+# Remove the kubelet-arg block an earlier version of this script appended.
+if [[ -f $K3S_CONFIG ]] && grep -q 'shutdown-grace-period' "$K3S_CONFIG"; then
+  sed -i '/^kubelet-arg:$/d; /shutdown-grace-period/d' "$K3S_CONFIG"
+  if ! grep -q '[^[:space:]]' "$K3S_CONFIG"; then
+    rm "$K3S_CONFIG"
+  fi
+  echo "Removed legacy shutdown-grace-period kubelet-arg from $K3S_CONFIG"
 fi
 
-cat >>"$CONFIG" <<EOF
-kubelet-arg:
-  - "shutdown-grace-period=$GRACE"
-  - "shutdown-grace-period-critical-pods=$CRITICAL_GRACE"
+mkdir -p "$DROPIN_DIR"
+cat >"$DROPIN" <<EOF
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+shutdownGracePeriod: $GRACE
+shutdownGracePeriodCriticalPods: $CRITICAL_GRACE
 EOF
-chmod 600 "$CONFIG"
 
 # logind caps inhibitor delays at InhibitDelayMaxSec (default 5s), which would
-# cut the grace period short.
+# cut the grace period short. Drop-ins from /etc and /usr/lib are merged and
+# applied in filename order, so the name must sort after Ubuntu's
+# unattended-upgrades-logind-maxdelay.conf (30s); "99-" sorts before it.
 mkdir -p /etc/systemd/logind.conf.d
-cat >/etc/systemd/logind.conf.d/99-k3s-graceful-shutdown.conf <<EOF
+rm -f /etc/systemd/logind.conf.d/99-k3s-graceful-shutdown.conf
+cat >/etc/systemd/logind.conf.d/zz-k3s-graceful-shutdown.conf <<EOF
 [Login]
 InhibitDelayMaxSec=$GRACE
 EOF
-# Reload logind config without restarting it (a restart can end desktop sessions).
+# Apply the new value before k3s restarts: the kubelet checks it only once at
+# startup and gives up on the shutdown manager if it is still too low.
 systemctl kill -s HUP systemd-logind
 
 # Restarting k3s doesn't stop running containers; the containerd shims survive.
@@ -50,5 +63,5 @@ for _ in $(seq 1 30); do
   fi
   sleep 2
 done
-echo "kubelet shutdown inhibitor not found; check: journalctl -u k3s | grep -i shutdown" >&2
+echo "kubelet shutdown inhibitor not found; check: journalctl -u k3s | grep -iE 'shutdown|error'" >&2
 exit 1
