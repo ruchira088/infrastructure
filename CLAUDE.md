@@ -17,7 +17,7 @@ Personal home-lab and AWS infrastructure: plain Kubernetes manifests, Terraform,
 | `elk-logs/` | Docker Compose ELK stack (see `elk-logs/README.md`) | `docker compose up -d` with a `.env` copied from `.env.example` |
 | `portainer/*/docker-compose.yml` | Stacks deployed through Portainer on a Docker host | Portainer UI |
 | `mergerfs/` | Disk pool + Samba share on the `home` server | `scp` the script, then `ssh -t home 'sudo bash /tmp/<script>.sh'`. **`setup_mergerfs.sh` wipes disks.** |
-| `k3s/` | k3s host config on the `home` server (kubelet graceful node shutdown) | `scp` the script, then `ssh -t home 'sudo bash /tmp/<script>.sh'` |
+| `k3s/` | `home` k3s server operations. `enable_graceful_shutdown.sh` is host config (kubelet graceful node shutdown); `restart_home_pods.sh` deletes pods one at a time to reset restart counts | `enable_graceful_shutdown.sh`: `scp` it, then `ssh -t home 'sudo bash /tmp/enable_graceful_shutdown.sh'`. `restart_home_pods.sh`: run locally (uses context `home`) |
 | `k8s/k3s/{single,cluster}`, `k8s/route-53-credentials`, `github/terraform` | AWS (`ap-southeast-2`) | `terraform init && terraform plan` inside the directory |
 | `raid/`, `samba/` | Runbooks only (Markdown) | — |
 
